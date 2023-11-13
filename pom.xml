@@ -28,6 +28,10 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
+<properties>
+  <sonar.organization>devops-cicd</sonar.organization>
+  <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+</properties>
 
 	<dependencies>
 		
@@ -95,7 +99,7 @@
 	    <repository>
 	      <id>github</id>
 	      <name></name>
-	      <url>https://maven.pkg.github.com/xashy-devops/xashy-webapp2</url>
+	      <url>https://maven.pkg.github.com/adminaws009/git-webapp2</url>
 	    </repository>
 	    
 	    
