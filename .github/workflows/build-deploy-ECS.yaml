@@ -46,7 +46,6 @@ jobs:
               with:
                  registry-type: public
                 
-            
             - name: Build the image  , tag and push to ECR 
               id: build-image
               env:
