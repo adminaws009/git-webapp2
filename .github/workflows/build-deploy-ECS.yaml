@@ -50,7 +50,7 @@ jobs:
               id: build-image
               env:
                  REGISTRY: ${{steps.login-ecr-public.outputs.registry}}  
-                 REPOSITORY_ALIAS: w7q4v1n8
+                 REGISTRY_ALIAS: w7q4v1n8
                  REPOSITORY: xashywebapp
                  IMAGE_TAG: ${{github.sha}}
               run: | 
