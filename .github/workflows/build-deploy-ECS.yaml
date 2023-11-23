@@ -50,12 +50,12 @@ jobs:
               id: build-image
               env:
                  REGISTRY: ${{steps.login-ecr-public.outputs.registry}}  
-                 REPOSITORY_ALIAS: xashy-webapp-pub-alias
+                 REPOSITORY_ALIAS: w7q4v1n8
                  REPOSITORY: xashywebapp
                  IMAGE_TAG: ${{github.sha}}
               run: | 
-                docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG . 
-                docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG 
-                echo "image=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT 
+                docker build -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG . 
+                docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG 
+                echo "image=$REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT 
 
                
