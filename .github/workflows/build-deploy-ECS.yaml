@@ -41,13 +41,16 @@ jobs:
                 aws-secret-access-key: ${{secrets.AWS_SECRET_KEY}}
                 aws-region: ${{secrets.AWS_REGION}}
             - name: login to amazon ECR 
-              id: login-ecr  
-              uses: aws-actions/amazon-ecr-login@v1 
+              id: login-ecr-public 
+              uses: aws-actions/amazon-ecr-login@v2
+              with:
+                 registry-type: public
             
             - name: Build the image  , tag and push to ECR 
               id: build-image
               env:
-                 REGISTRY: ${{steps.login-ecr.outputs.registry}}  
+                 REGISTRY: ${{steps.login-ecr-public.outputs.registry}}  
+                 REPOSITORY_ALIAS: xashy-webapp-pub-alias
                  REPOSITORY: xashywebapp
                  IMAGE_TAG: ${{github.sha}}
               run: | 
