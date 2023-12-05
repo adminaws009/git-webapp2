@@ -1,61 +1,61 @@
-name: Build and deploy image to ECS. 
+name: Deploy-to-ECS
 
 on:
-    push:
-        branches:
-            - main
-    workflow_dispatch:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
-    scan-build-containerise:
-        permissions:
-            contents: read 
-            packages: write 
-        runs-on: ubuntu-latest 
-        steps:
-            - name: clone repo 
-              uses: actions/checkout@v3
+    steps:
+      - name: Checkout code (clone repo)
+        uses: actions/checkout@v2
 
-            - name: setup java and maven
-              uses: actions/setup-java@v3
-              with:  
-               distribution: 'adopt'
-               java-version: '11'
-            
-            - name: peform code analyses
-              run: mvn sonar:sonar -Dsonar.projectKey=${{secrets.SONAR_PROJECT_KEY}} -Dsonar.host.url=${{secrets.SONAR_HOST_URL}} -Dsonar.login=${{secrets.SONAR_LOGIN_TOKEN}}
-            
-            - name: perform build with maven
-              run: mvn package 
-              
-            - name: upload artifact to artifact repo 
-              run: mvn --batch-mode deploy
-              env:
-                GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-            ##### setup authentication between github actions and aws 
-            - name: authenticate to aws 
-              uses: aws-actions/configure-aws-credentials@v4
-              with:
-                aws-access-key-id: ${{secrets.AWS_ACCESS_KEY}}
-                aws-secret-access-key: ${{secrets.AWS_SECRET_KEY}}
-                aws-region: us-east-1
-            - name: login to amazon ECR 
-              id: login-ecr-public 
-              uses: aws-actions/amazon-ecr-login@v2
-              with:
-                 registry-type: public
-                
-            - name: Build the image  , tag and push to ECR 
-              id: build-image
-              env:
-                 REGISTRY: ${{steps.login-ecr-public.outputs.registry}}  
-                 REGISTRY_ALIAS: w7q4v1n8
-                 REPOSITORY: xashywebapp
-                 IMAGE_TAG: ${{github.sha}}
-              run: | 
-                docker build -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG . 
-                docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG 
-                echo "image=$REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT 
+      - name: install Java and setup Maven
+        uses: actions/setup-java@v3
+        with:
+          distribution: "adopt"
+          java-version: '11'
 
-               
+      - name: SonarQube analysis
+        run: mvn sonar:sonar -Dsonar.projectKey=${{secrets.SONAR_PROJECT_KEY}} -Dsonar.host.url=${{secrets.SONAR_HOST_URL}} -Dsonar.login=${{secrets.SONAR_LOGIN_TOKEN}}
+
+      - name: Maven build
+        run: mvn clean package
+
+      - name: Upload to artifact repo
+        run: mvn --batch-mode deploy
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Authenticate to AWS
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_KEY}}
+          aws-region: ${{secrets.AWS_REGION}}
+
+      - name: Copy artifact to S3
+        run: aws s3 cp target/*.war s3://artifact-repo-charlo
+
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        run: aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+      - name: Build Docker image
+        run: |
+          docker build -t class-webapp-java:latest .
+          docker tag class-webapp-java:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/contianers:latest
+      - name: Push image to Amazon ECR
+        run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/contianers:latest
+
+      - name: Deploy to Amazon ECS
+        run: |
+          aws ecs update-service --cluster your-cluster-name --service your-service-name --force-new-deployment
