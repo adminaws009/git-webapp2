@@ -29,10 +29,10 @@ jobs:
       - name: Maven build
         run: mvn clean package
 
-      - name: Upload to artifact repo
-        run: mvn --batch-mode deploy
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      #- name: Upload to artifact repo
+       # run: mvn --batch-mode deploy
+        #env:
+         # GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - name: Authenticate to AWS
         uses: aws-actions/configure-aws-credentials@v1
