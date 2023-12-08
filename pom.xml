@@ -25,6 +25,8 @@
 		<sonar.host.url></sonar.host.url>
 		<sonar.login></sonar.login>
 		<sonar.password></sonar.password> 
+		<sonar.organization>devops-cicd</sonar.organization>
+
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
